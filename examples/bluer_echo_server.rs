@@ -1,6 +1,3 @@
-use crate::bluer_adapter::BluerPeripheral;
-use ble_peripheral::gatt_server_cb::{GattServerCallback, GattServerEvent};
-use ble_peripheral::peripheral::Peripheral;
 use ble_peripheral::prelude::*;
 use enumset::enum_set;
 use log::{debug, error, info, trace, warn};
@@ -11,6 +8,7 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::select;
 use tokio::sync::oneshot;
 use tokio::task::LocalSet;
+use bluer_ble_peripheral::BluerPeripheral;
 
 const ECHO_SERVICE_UUID: UUID = UUID::Long(0xFEEDC0DE);
 const ECHO_CHARACTERISTIC_UUID: UUID = UUID::Long(0xF00DC0DE00001);

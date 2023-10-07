@@ -10,6 +10,10 @@ ble-peripheral = { git = "https://github.com/jasta/ble-peripheral" }
 [dependencies]
 ble-peripheral = "*"
 bluer = { version = "0.16.1", features = ["bluetoothd"] }
-tokio = { version = "1.32.0", features = ["sync"] }
+tokio = { version = "1.32.0", features = ["sync", "io-std"] }
 log = "0.4.20"
 futures-util = "0.3.28"
+
+[dev-dependencies]
+env_logger = "0.10.0"
+enumset = "1.1.2"
