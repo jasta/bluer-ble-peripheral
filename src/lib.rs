@@ -1,14 +1,13 @@
-pub mod peripheral;
-mod application_factory;
-mod handle;
 mod advertiser;
+mod application_factory;
 mod connection;
-mod responder;
-mod writer;
-mod err_util;
-mod uuid_util;
-mod event;
 mod device_ident;
+mod err_util;
+mod event;
+mod handle;
+pub mod peripheral;
+mod responder;
+mod uuid_util;
+mod writer;
 
 pub use peripheral::*;
-

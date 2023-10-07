@@ -1,4 +1,5 @@
 use ble_peripheral::prelude::*;
+use bluer_ble_peripheral::BluerPeripheral;
 use enumset::enum_set;
 use log::{debug, error, info, trace, warn};
 use std::collections::btree_map::Entry;
@@ -8,7 +9,6 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::select;
 use tokio::sync::oneshot;
 use tokio::task::LocalSet;
-use bluer_ble_peripheral::BluerPeripheral;
 
 const ECHO_SERVICE_UUID: UUID = UUID::Long(0xFEEDC0DE);
 const ECHO_CHARACTERISTIC_UUID: UUID = UUID::Long(0xF00DC0DE00001);
