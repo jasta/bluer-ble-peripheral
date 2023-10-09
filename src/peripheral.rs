@@ -111,17 +111,18 @@ async fn run_event_loop(
   while let Some(event) = rx.recv().await {
     match event {
       Event::OnStartResult(r) => {
-        let event = match r {
+        match r {
           Ok((handle, advertiser, handle_mapping)) => {
             handles.app = Some(handle);
-            GattServerEvent::ServerStarted {
+            callback.on_event(GattServerEvent::ServerStarted {
               advertiser,
-              handle_mapping,
-            }
+              handle_mapping: &handle_mapping,
+            });
           }
-          Err(error) => GattServerEvent::ServerShutdown { error },
-        };
-        callback.on_event(event);
+          Err(error) => {
+            callback.on_event(GattServerEvent::ServerShutdown { error });
+          },
+        }
       }
       Event::OnHandleDrop => {
         debug!("Advertiser dropped, shutting down!");
@@ -136,18 +137,19 @@ async fn run_event_loop(
         });
       }
       Event::OnAdvStartResult(r) => {
-        let event = match r {
+        match r {
           Ok(handle) => {
             handles.advertisement = Some(handle);
-            GattServerEvent::AdvertisingStarted {
+            callback.on_event(GattServerEvent::AdvertisingStarted {
               remaining_connections: None,
-            }
+            });
           }
-          Err(error) => GattServerEvent::AdvertisingStartFail {
-            reason: AdvStartFailedReason::SystemError(error),
+          Err(error) => {
+            callback.on_event(GattServerEvent::AdvertisingStartFail {
+              reason: &AdvStartFailedReason::SystemError(error),
+            });
           },
-        };
-        callback.on_event(event);
+        }
       }
       Event::RequestAdvStop => {
         drop(handles.advertisement.take());

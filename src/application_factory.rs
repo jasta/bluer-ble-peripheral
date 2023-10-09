@@ -52,9 +52,9 @@ impl ApplicationFactory {
 
   fn new_service(&mut self, service_spec: &GattService) -> Result<Service, bluer::Error> {
     let mut service = self.new_service_base(service_spec)?;
-    for characteristic_spec in &service_spec.characteristics {
+    for characteristic_spec in service_spec.characteristics {
       let mut characteristic = self.new_characteristic_base(characteristic_spec)?;
-      for descriptor_spec in &characteristic_spec.descriptors {
+      for descriptor_spec in characteristic_spec.descriptors {
         let descriptor = self.new_descriptor(descriptor_spec)?;
         characteristic.descriptors.push(descriptor);
       }

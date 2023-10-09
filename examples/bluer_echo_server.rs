@@ -39,14 +39,16 @@ where
 
   let service = GattService {
     uuid: ECHO_SERVICE_UUID,
-    characteristics: vec![GattCharacteristic {
-      uuid: ECHO_CHARACTERISTIC_UUID,
-      properties: enum_set!(GattCharacteristicProperty::Read | GattCharacteristicProperty::Write),
-      permissions: enum_set!(
-        GattCharacteristicPermission::Read | GattCharacteristicPermission::Write
-      ),
-      ..Default::default()
-    }],
+    characteristics: &[
+      GattCharacteristic {
+        uuid: ECHO_CHARACTERISTIC_UUID,
+        properties: enum_set!(GattCharacteristicProperty::Read | GattCharacteristicProperty::Write),
+        permissions: enum_set!(
+          GattCharacteristicPermission::Read | GattCharacteristicPermission::Write
+        ),
+        ..Default::default()
+      }
+    ],
     ..Default::default()
   };
 
@@ -132,8 +134,8 @@ impl<P: Peripheral + Debug> GattServerCallback<P> for EchoServer<P> {
         info!("Server started!");
 
         for (uuid, handle) in handle_mapping {
-          if uuid == ECHO_CHARACTERISTIC_UUID {
-            self.echo_handle = Some(handle);
+          if uuid == &ECHO_CHARACTERISTIC_UUID {
+            self.echo_handle = Some(*handle);
           }
         }
 
