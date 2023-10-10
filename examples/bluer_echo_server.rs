@@ -92,12 +92,15 @@ impl<P: Peripheral> EchoServer<P> {
   }
 
   fn start_advertising(&self) {
-    let mut manufacturer_data = BTreeMap::new();
-    manufacturer_data.insert(MY_MANUFACTURER_ID, vec![0x21, 0x22, 0x23, 0x24]);
-    let adv = Advertisement {
-      is_connectable: true,
-      is_discoverable: true,
-      manufacturer_data,
+    let payload = AdvertisementPayloadBuilder::new()
+      .push_manufacturer_data(MY_MANUFACTURER_ID, &[0x21, 0x22, 0x23, 0x24])
+      .unwrap()
+      .build()
+      .unwrap();
+    let adv = AdvertisementRequest {
+      params: AdvertisementParams::default(),
+      payload,
+      scan_response_payload: None,
     };
     self.advertiser.clone().unwrap().request_start(adv);
   }
