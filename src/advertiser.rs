@@ -6,8 +6,8 @@ use std::sync::Arc;
 use ble_peripheral::advertisement::{AdType, AdvertisementRequest, ConnectMode};
 use ble_peripheral::gap_advertiser::GapAdvertiser;
 use ble_peripheral::prelude::{AdvertisementParams, AdvertisementPayload, DiscoverMode};
-use bluer::{Uuid, UuidExt};
 use bluer::adv::Feature;
+use bluer::{Uuid, UuidExt};
 use byteorder::{LittleEndian, ReadBytesExt};
 use log::warn;
 use tokio::sync::mpsc;
@@ -68,7 +68,10 @@ impl AdvertisementFactory {
 
   fn process_params(&mut self, params: AdvertisementParams) -> Result<(), bluer::Error> {
     if params.connect_mode != ConnectMode::Directed {
-      return Err(generic_err(&format!("Unsupported connect_mode={:?}", params.connect_mode)));
+      return Err(generic_err(&format!(
+        "Unsupported connect_mode={:?}",
+        params.connect_mode
+      )));
     }
     self.output.min_interval = params.interval_min;
     self.output.max_interval = params.interval_max;
@@ -86,33 +89,45 @@ impl AdvertisementFactory {
   fn process_ad_record(&mut self, record: AdvertisementRecord) -> Result<(), bluer::Error> {
     match record.ad_type {
       t if t == AdType::Flags as _ => {
-        let flags = record.data.first().ok_or_else(|| generic_err("Flags missing data!"))?;
+        let flags = record
+          .data
+          .first()
+          .ok_or_else(|| generic_err("Flags missing data!"))?;
         let is_discoverable = flags & DISCOVER_MODE_MASK == DiscoverMode::General as _;
         self.output.discoverable = Some(is_discoverable);
       }
       t if t == AdType::ShortLocalName as _ || t == AdType::LongLocalName as _ => {
         let name = String::from_utf8(record.data.to_vec())
-            .map_err(|e| generic_err(&format!("invalid local name: {e}")))?;
+          .map_err(|e| generic_err(&format!("invalid local name: {e}")))?;
         self.output.local_name.get_or_insert(name);
         self.output.system_includes.insert(Feature::LocalName);
       }
       t if t == AdType::Appearance as _ => {
-        let appearance = Cursor::new(record.data).read_u16::<LittleEndian>()
-            .map_err(|e| generic_err(&format!("invalid appearance: {e}")))?;
+        let appearance = Cursor::new(record.data)
+          .read_u16::<LittleEndian>()
+          .map_err(|e| generic_err(&format!("invalid appearance: {e}")))?;
         self.output.appearance = Some(appearance);
         self.output.system_includes.insert(Feature::Appearance);
       }
       t if t == AdType::ManufacturerData as _ => {
         let mut cursor = Cursor::new(record.data);
-        let manufacturer_id = cursor.read_u16::<LittleEndian>()
-            .map_err(|e| generic_err(&format!("invalid manufacturer id: {e}")))?;
-        self.output.manufacturer_data.insert(manufacturer_id, read_remainder(cursor));
+        let manufacturer_id = cursor
+          .read_u16::<LittleEndian>()
+          .map_err(|e| generic_err(&format!("invalid manufacturer id: {e}")))?;
+        self
+          .output
+          .manufacturer_data
+          .insert(manufacturer_id, read_remainder(cursor));
       }
       t if t == AdType::ServiceData16 as _ => {
         let mut cursor = Cursor::new(record.data);
-        let service_uuid = cursor.read_u16::<LittleEndian>()
-            .map_err(|e| generic_err(&format!("invalid service id: {e}")))?;
-        self.output.service_data.insert(Uuid::from_u16(service_uuid), read_remainder(cursor));
+        let service_uuid = cursor
+          .read_u16::<LittleEndian>()
+          .map_err(|e| generic_err(&format!("invalid service id: {e}")))?;
+        self
+          .output
+          .service_data
+          .insert(Uuid::from_u16(service_uuid), read_remainder(cursor));
       }
       t if t == AdType::CompleteServiceUuids16 as _ => {
         let mut cursor = Cursor::new(record.data);
@@ -175,16 +190,16 @@ struct AdvertisementRecord {
 
 #[cfg(test)]
 mod tests {
+  use crate::advertiser::AdvertisementFactory;
   use ble_peripheral::advertisement::AdvertisementPayloadBuilder;
   use ble_peripheral::prelude::{AdvertisementParams, AdvertisementRequest, DiscoverMode};
-  use crate::advertiser::AdvertisementFactory;
 
   #[test]
   fn test_flags() {
     let payload = AdvertisementPayloadBuilder::new()
-        .set_discover_mode(DiscoverMode::None)
-        .build()
-        .unwrap();
+      .set_discover_mode(DiscoverMode::None)
+      .build()
+      .unwrap();
     let req = AdvertisementRequest {
       params: AdvertisementParams::default(),
       payload,
@@ -201,9 +216,10 @@ mod tests {
     let mfg_id = 0x1234;
     let data = [0x1, 0x2, 0x3, 0x4];
     let payload = AdvertisementPayloadBuilder::new()
-        .push_manufacturer_data(mfg_id, &data).unwrap()
-        .build()
-        .unwrap();
+      .push_manufacturer_data(mfg_id, &data)
+      .unwrap()
+      .build()
+      .unwrap();
     let req = AdvertisementRequest {
       params: AdvertisementParams::default(),
       payload,

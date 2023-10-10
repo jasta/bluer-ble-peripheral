@@ -110,20 +110,18 @@ async fn run_event_loop(
 
   while let Some(event) = rx.recv().await {
     match event {
-      Event::OnStartResult(r) => {
-        match r {
-          Ok((handle, advertiser, handle_mapping)) => {
-            handles.app = Some(handle);
-            callback.on_event(GattServerEvent::ServerStarted {
-              advertiser,
-              handle_mapping: &handle_mapping,
-            });
-          }
-          Err(error) => {
-            callback.on_event(GattServerEvent::ServerShutdown { error });
-          },
+      Event::OnStartResult(r) => match r {
+        Ok((handle, advertiser, handle_mapping)) => {
+          handles.app = Some(handle);
+          callback.on_event(GattServerEvent::ServerStarted {
+            advertiser,
+            handle_mapping: &handle_mapping,
+          });
         }
-      }
+        Err(error) => {
+          callback.on_event(GattServerEvent::ServerShutdown { error });
+        }
+      },
       Event::OnHandleDrop => {
         debug!("Advertiser dropped, shutting down!");
         return;
@@ -136,21 +134,19 @@ async fn run_event_loop(
           let _ = self_tx.send(Event::OnAdvStartResult(r));
         });
       }
-      Event::OnAdvStartResult(r) => {
-        match r {
-          Ok(handle) => {
-            handles.advertisement = Some(handle);
-            callback.on_event(GattServerEvent::AdvertisingStarted {
-              remaining_connections: None,
-            });
-          }
-          Err(error) => {
-            callback.on_event(GattServerEvent::AdvertisingStartFail {
-              reason: &AdvStartFailedReason::SystemError(error),
-            });
-          },
+      Event::OnAdvStartResult(r) => match r {
+        Ok(handle) => {
+          handles.advertisement = Some(handle);
+          callback.on_event(GattServerEvent::AdvertisingStarted {
+            remaining_connections: None,
+          });
         }
-      }
+        Err(error) => {
+          callback.on_event(GattServerEvent::AdvertisingStartFail {
+            reason: &AdvStartFailedReason::SystemError(error),
+          });
+        }
+      },
       Event::RequestAdvStop => {
         drop(handles.advertisement.take());
         callback.on_event(GattServerEvent::AdvertisingStopped {
