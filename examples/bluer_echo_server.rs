@@ -10,6 +10,7 @@ use tokio::select;
 use tokio::sync::oneshot;
 use tokio::task::LocalSet;
 
+const PERIPHERAL_NAME: &str = "bluer_server";
 const ECHO_SERVICE_UUID: UUID = UUID::Long(0xFEEDC0DE);
 const ECHO_CHARACTERISTIC_UUID: UUID = UUID::Long(0xF00DC0DE00001);
 const MY_MANUFACTURER_ID: u16 = 0xf00d;
@@ -35,7 +36,7 @@ async fn run_server_from_trait<P>(mut peripheral: P) -> Result<(), P::SystemErro
 where
   P: Peripheral + Debug + 'static,
 {
-  peripheral.set_name("gatt_server")?;
+  peripheral.set_name(PERIPHERAL_NAME)?;
 
   let service = GattService {
     uuid: ECHO_SERVICE_UUID,
@@ -94,6 +95,8 @@ impl<P: Peripheral> EchoServer<P> {
   fn start_advertising(&self) {
     let payload = AdvertisementPayloadBuilder::new()
       .push_manufacturer_data(MY_MANUFACTURER_ID, &[0x21, 0x22, 0x23, 0x24])
+      .unwrap()
+      .push_local_name(PERIPHERAL_NAME)
       .unwrap()
       .build()
       .unwrap();

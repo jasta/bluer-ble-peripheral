@@ -6,10 +6,9 @@ use std::sync::Arc;
 use ble_peripheral::advertisement::{AdType, AdvertisementRequest, ConnectMode};
 use ble_peripheral::gap_advertiser::GapAdvertiser;
 use ble_peripheral::prelude::{AdvertisementParams, AdvertisementPayload, DiscoverMode};
-use bluer::adv::Feature;
 use bluer::{Uuid, UuidExt};
 use byteorder::{LittleEndian, ReadBytesExt};
-use log::warn;
+use log::{info, warn};
 use tokio::sync::mpsc;
 
 use crate::device_ident::DeviceIdent;
@@ -100,14 +99,12 @@ impl AdvertisementFactory {
         let name = String::from_utf8(record.data.to_vec())
           .map_err(|e| generic_err(&format!("invalid local name: {e}")))?;
         self.output.local_name.get_or_insert(name);
-        self.output.system_includes.insert(Feature::LocalName);
       }
       t if t == AdType::Appearance as _ => {
         let appearance = Cursor::new(record.data)
           .read_u16::<LittleEndian>()
           .map_err(|e| generic_err(&format!("invalid appearance: {e}")))?;
         self.output.appearance = Some(appearance);
-        self.output.system_includes.insert(Feature::Appearance);
       }
       t if t == AdType::ManufacturerData as _ => {
         let mut cursor = Cursor::new(record.data);
