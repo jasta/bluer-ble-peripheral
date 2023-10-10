@@ -5,7 +5,8 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [patch.crates-io]
-ble-peripheral = { git = "https://github.com/jasta/ble-peripheral" }
+#ble-peripheral = { git = "https://github.com/jasta/ble-peripheral" }
+ble-peripheral = { path = "/home/jasta/projects/ble-peripheral" }
 
 [dependencies]
 ble-peripheral = "*"
@@ -13,6 +14,7 @@ bluer = { version = "0.16.1", features = ["bluetoothd"] }
 tokio = { version = "1.32.0", features = ["sync", "io-std"] }
 log = "0.4.20"
 futures-util = "0.3.28"
+byteorder = "1.5.0"
 
 [dev-dependencies]
 env_logger = "0.10.0"
